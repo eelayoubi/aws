@@ -1,0 +1,11 @@
+resource "aws_iam_policy" "dynamo_db_read" {
+  name   = "dynamo_db_read_policy"
+  path   = "/"
+  policy = data.aws_iam_policy_document.dynamo_db_read.json
+}
+
+resource "aws_iam_policy" "dynamo_db_write" {
+  name   = "dynamo_db_write_policy"
+  path   = "/"
+  policy = data.aws_iam_policy_document.dynamo_db_write.json
+}
