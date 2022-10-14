@@ -6,7 +6,7 @@ const TABLE_NAME = process.env.TABLE_NAME
 class BookHotelError extends Error {
   constructor(message) {
     super(message)
-    this.name = "BookingHotelError"
+    this.name = "BookHotelError"
   }
 }
 
