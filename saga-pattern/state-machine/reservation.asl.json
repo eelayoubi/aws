@@ -1,0 +1,156 @@
+{
+    "Comment": "Start",
+    "StartAt": "BookHotel",
+    "States": {
+      "BookHotel": {
+        "Type": "Task",
+        "Resource": "${BOOK_HOTEL_FUNCTION_ARN}",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "BookHotelError"
+            ],
+            "ResultPath": "$.error-info",
+            "Next": "CancelHotel"
+          }
+        ],
+        "Next": "BookFlight"
+      },
+      "CancelHotel": {
+        "Type": "Task",
+        "Resource": "${CANCEL_HOTEL_FUNCTION_ARN}",
+        "ResultPath": "$.output.cancel-hotel",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Next": "ReservationFailed"
+      },
+      "BookFlight": {
+        "Type": "Task",
+        "Resource": "${BOOK_FLIGHT_FUNCTION_ARN}",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "BookFlightError"
+            ],
+            "ResultPath": "$.error-info",
+            "Next": "CancelFlight"
+          }
+        ],
+        "Next": "BookRental"
+      },
+      "CancelFlight": {
+        "Type": "Task",
+        "Resource": "${CANCEL_FLIGHT_FUNCTION_ARN}",
+        "ResultPath": "$.output.cancel-flight",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Next": "CancelHotel"
+      },
+      "BookRental": {
+        "Type": "Task",
+        "Resource": "${BOOK_RENTAL_LAMBDA_ARN}",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "BookRentalError"
+            ],
+            "ResultPath": "$.error-info",
+            "Next": "CancelRental"
+          }
+        ],
+        "Next": "ReservationSucceeded"
+      },
+      "ReservationSucceeded": {
+        "Type": "Succeed"
+      },
+      "CancelRental": {
+        "Type": "Task",
+        "Resource": "${CANCEL_RENTAL_LAMBDA_ARN}",
+        "ResultPath": "$.output.cancel-rental",
+        "TimeoutSeconds": 10,
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "States.Timeout",
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 3,
+            "BackoffRate": 1.5
+          }
+        ],
+        "Next": "CancelFlight"
+      },
+      "ReservationFailed": {
+        "Type": "Fail"
+      }
+    }
+  }

@@ -22,11 +22,6 @@ resource "aws_lambda_function" "function" {
       variables = var.environment_variables
     }
   }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "rm -f ${self.filename}"
-  }
 }
 
 resource "aws_cloudwatch_log_group" "aggregator" {
@@ -36,7 +31,7 @@ resource "aws_cloudwatch_log_group" "aggregator" {
 }
 
 resource "aws_iam_role" "lambda_function_role" {
-  name = "FunctionIamRole_${var.function_name}"
+  name = "Function_Iam_Role_${var.function_name}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
