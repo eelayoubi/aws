@@ -1,11 +1,11 @@
-resource "aws_iam_policy" "dynamo_db_read" {
-  name   = "dynamo_db_read_policy"
+resource "aws_iam_policy" "dynamo_db_delete" {
+  name   = "${var.name}_delete_policy"
   path   = "/"
-  policy = data.aws_iam_policy_document.dynamo_db_read.json
+  policy = data.aws_iam_policy_document.dynamo_db_delete.json
 }
 
 resource "aws_iam_policy" "dynamo_db_write" {
-  name   = "dynamo_db_write_policy"
+  name   = "${var.name}_write_policy"
   path   = "/"
   policy = data.aws_iam_policy_document.dynamo_db_write.json
 }
