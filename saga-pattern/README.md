@@ -1,23 +1,26 @@
 # Implementing SAGA Pattern
 
-“LLT is a saga if it can be written as a sequence of transactions that can be interleaved with other transactions.” (Garcia-Molina, Salem 1987)
+*LLT is a saga if it can be written as a sequence of transactions that can be interleaved with other transactions.*
+(Garcia-Molina, Salem 1987)
 
-it is a failure management pattern, that provides us the means to establish semantic consistency in our distributed applications by providing compensating transactions for every transaction where you have more than one collaborating services or functions.
+It is a failure management pattern, that provides us the means to establish semantic consistency in our distributed applications by providing compensating transactions for every transaction where you have more than one collaborating services or functions.
 
 ## Step Functions
-I am using **AWS Step Functions** to implement the SAGA pattern.
+I am using **AWS Step Functions** to implement the *SAGA pattern*.
 
 **What is AWS Step Functions?**
 
-"AWS Step Functions is a fully managed service that makes it easy to coordinate the components of distributed applications and microservices using visual workflows. Building applications from individual components that each perform a discrete function lets you scale easily and change applications quickly. Step Functions is a reliable way to coordinate components and step through the functions of your application. Step Functions automatically triggers and tracks each step, and retries when there are errors, so your application executes in order and as expected. Step Functions logs the state of each step, so when things do go wrong, you can diagnose and debug problems quickly. You can change and add steps without even writing code, so you can easily evolve your application and innovate faster."
+*AWS Step Functions is a fully managed service that makes it easy to coordinate the components of distributed applications and microservices using visual workflows. Building applications from individual components that each perform a discrete function lets you scale easily and change applications quickly. Step Functions is a reliable way to coordinate components and step through the functions of your application. Step Functions automatically triggers and tracks each step, and retries when there are errors, so your application executes in order and as expected. Step Functions logs the state of each step, so when things do go wrong, you can diagnose and debug problems quickly. You can change and add steps without even writing code, so you can easily evolve your application and innovate faster.*
 
 ## How to run it
-I am using terraform to provision and deploy the resources used in this example. 
+I am using **terraform** to provision and deploy the resources used in this example. 
 
 ### Prerequisites
 - Make sure to have terraform installed prior to running the example. Feel free to refer to the [official page](https://learn.hashicorp.com/tutorials/terraform/install-cli) to install it.
 
 - Make sure you have [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) installed and configured.
+
+I am using the **us-east-1** as a region. You can change [here](./provider.tf#L12).
 
 ```
 terraform apply -auto-approve
@@ -58,12 +61,13 @@ terraform apply -auto-approve
 
 ## Sample application
 ### Scenario
-In this example, we are implementing a simple reservation application/workflow. We try to book a hotel, if it is a success, we book a flight, if it is a success we book a rental. If booking the rental is a success, we happily end the workflow with a Success state.
+In this example, we are implementing a simple *reservation* application/workflow.
+We try to book a hotel, if it is a success, we book a flight, if it is a success we book a rental. If booking the rental is a success, we happily end the workflow with a Success state.
 
 ![](./docs/images/diagram.png)
 
 ### Success Scenario
-To run the step function, go to the aws console web page, be sure to select the correct region (default: us-east-1), select the "Reservation" from the list of state machines. Click the "Start Execution" button and provide the following input:
+To run the step function, go to the aws console web page, be sure to select the correct region **(default: us-east-1)**, select the **"Reservation"** from the list of state machines. Click the **"Start Execution"** button and provide the following input:
 
 ```
 {
@@ -73,17 +77,16 @@ To run the step function, go to the aws console web page, be sure to select the 
 }
 ```
 
-I am not verifying the dates, as those are not important ...
+No need to verify the dates, as those are not relevant to our example.
 
 ![](scenario-success.png)
-
 
 ### Failed scenario
 This app can intentionnaly fail in 3 different areas.
 
-1. If you provide a confirmation_id starting with 11, BookHotel lambda function will throw an error ([diagram](./docs/images/scenario-fail-booking-hotel.png))
-2. If you provide a confirmation_id starting with 22, BookFlight lambda function will throw an error ([diagram](./docs/images/scenario-fail-booking-flight.png))
-3. If you provide a confirmation_id starting with 33, BookRental lambda function will throw an error ([diagram](./docs/images/scenario-fail-booking-rental.png))
+1. If you provide a confirmation_id starting with 11, BookHotel lambda function will throw an error. The step Function will then invoke the CancelHotel function to delete the record from the BookHotel table ([diagram](./docs/images/scenario-fail-booking-hotel.png))
+2. If you provide a confirmation_id starting with 22, BookFlight lambda function will throw an error. The step Function will then invoke the CancelFlight function to delete the record from the BookFlight table, after that, the step function will invoke the CancelHotel. ([diagram](./docs/images/scenario-fail-booking-flight.png))
+3. If you provide a confirmation_id starting with 33, BookRental lambda function will throw an error. The step Function will then invoke the CancelRental function to delete the record from the BookRental table, after that, the step function will invoke the CancelFlight and so on, until we revert all the transactions.  ([diagram](./docs/images/scenario-fail-booking-rental.png))
 
 ## Cleanup
 Don't forget to clean everything up by running:
