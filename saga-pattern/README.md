@@ -1,9 +1,7 @@
 # Implementing SAGA Pattern
+The SAGA pattern is a failure management pattern, that provides us the means to establish semantic consistency in our distributed applications by providing compensating transactions for every transaction where you have more than one collaborating services or functions.
 
-*LLT is a saga if it can be written as a sequence of transactions that can be interleaved with other transactions.*
-(Garcia-Molina, Salem 1987)
-
-It is a failure management pattern, that provides us the means to establish semantic consistency in our distributed applications by providing compensating transactions for every transaction where you have more than one collaborating services or functions.
+To read more about it, please refer to the official paper https://www.cs.cornell.edu/andru/cs711/2002fa/reading/sagas.pdf.
 
 ## Step Functions
 I am using **AWS Step Functions** to implement the *SAGA pattern*.
